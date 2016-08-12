@@ -1,23 +1,23 @@
 require 'selenium-webdriver'
 require 'nokogiri'
-require "date"
+require 'pit'
 require 'time'
 require 'icalendar'
 
-LIBIDM = ""
-LIBPW = ""
-
-class Liblist
+class Shibuya
   def initialize()
     @wd = Selenium::WebDriver.for :chrome
   end
   def list()
     begin
+      #渋谷区立図書館
+      config = Pit.get('shibuyalib')
+
       @wd.get "https://www.lib.city.shibuya.tokyo.jp/asp/WwJouNinshou.aspx"
-      @wd.find_element(:id, "txtRiyoshaCD").send_keys LIBIDS
+      @wd.find_element(:id, "txtRiyoshaCD").send_keys config['id']
       @wd.find_element(:id, "txtPassword").click
       @wd.find_element(:id, "txtPassword").clear
-      @wd.find_element(:id, "txtPassword").send_keys LIBPW
+      @wd.find_element(:id, "txtPassword").send_keys config['password']
       @wd.find_element(:id, "btnKakunin").click
 
       sibuyalend = Icalendar::Calendar.new
@@ -35,11 +35,14 @@ class Liblist
       sibuya = 0
       tyuuou = 0
       tomigaya = 0
+      lend = 0
 
       (2..31).each do |bn|
         contact = @wd.find_elements(:xpath, '//*[@id="dgdKas"]/tbody/tr['+bn.to_s+']/td[2]/a')
         if contact.size == 0
           break
+        else
+          lend += 1
         end
         html = @wd.page_source
         doc = Nokogiri::HTML(html)
@@ -76,17 +79,17 @@ class Liblist
           @num = anchor.content.delete("-")
         end
         @wd.find_element(:id, "lnkJokyo").click
-        sibuyalend.event do |e|
-          e.dtstart     = Icalendar::Values::Date.new(@date)
-          e.dtend       = Icalendar::Values::Date.new(@date)
-          e.summary     = @Encho.to_s+@title.to_s
+        sibuyalend.event do |ev|
+          ev.dtstart     = Icalendar::Values::Date.new(@date)
+          ev.dtend       = Icalendar::Values::Date.new(@date)
+          ev.summary     = @Encho.to_s+@title.to_s
         end
-        sibuyalend.publish
       end
 
-      puts "渋谷図書館"+sibuya.to_s+" "+"中央図書館"+tyuuou.to_s+" "+"富ヶ谷図書館"+tomigaya.to_s
+      puts "渋谷貸出合計冊数は"+lend.to_s+"冊"
+      puts "渋谷図書館"+sibuya.to_s+"冊 "+"中央図書館"+tyuuou.to_s+"冊 "+"富ヶ谷図書館"+tomigaya.to_s+"冊 "
 
-      open('git/sibuyalend.ics', "w") do |ical|
+      open('git/sibuyalend.ics', "wb") do |ical|
         ical.puts sibuyalend.to_ical
       end
 
@@ -102,38 +105,72 @@ class Liblist
       sibuyarsv.append_custom_property('X-WR-CALNAME', "渋谷図書館予約状況")
       sibuyarsv.append_custom_property('X-WR-CALDESC', "渋谷図書館予約状況カレンダー")
 
+      sibuya = 0
+      tyuuou = 0
+      tomigaya = 0
+      sibuya2 = 0
+      tyuuou2 = 0
+      tomigaya2 = 0
+
+      rsv = 0
+      hold = 0
+
       (2..21).each do |bn|
         contact = @wd.find_elements(:xpath, '//*[@id="dgdYoy"]/tbody/tr['+bn.to_s+']/td[2]/a')
         if contact.size == 0
           break
+        else
+          rsv += 1
         end
+        html = @wd.page_source
+        doc = Nokogiri::HTML(html)
+        doc.xpath("//*[@id='dgdYoy']/tbody/tr["+bn.to_s+"]/td[7]").each do |anchor|
+          @location = anchor.content.delete("　").gsub(/(\s)/,"")
+        end
+        if @location == "富ヶ谷図書館"
+          tomigaya2 += 1
+        elsif @location == "渋谷図書館"
+          sibuya2 += 1
+        elsif @location == "中央図書館"
+          tyuuou2 += 1
+        end
+
         contact2 = @wd.find_elements(:xpath, "//*[@id='dgdYoy']/tbody/tr["+bn.to_s+"]/td[contains(.,'/')][2]")
         if contact2.size != 0
-          html = @wd.page_source
-          doc = Nokogiri::HTML(html)
+          hold += 1
           doc.xpath('//*[@id="dgdYoy"]/tbody/tr['+bn.to_s+']/td[2]/a').each do |anchor|
             @title = anchor.content.delete(" ")
           end
-          doc.xpath("//*[@id='dgdYoy']/tbody/tr["+bn.to_s+"]/td[7]").each do |anchor|
-            @location = anchor.content.delete("　").gsub(/(\s)/,"")
-          end
           @loc_title = "["+@location+"]"+@title
+
+          if @location == "富ヶ谷図書館"
+            tomigaya += 1
+          elsif @location == "渋谷図書館"
+            sibuya += 1
+          elsif @location == "中央図書館"
+            tyuuou += 1
+          end
 
           doc.xpath("//*[@id='dgdYoy']/tbody/tr["+bn.to_s+"]/td[contains(.,'/')][2]").each do |anchor|
             @date = anchor.content.delete("/")
           end
-          sibuyarsv.event do |e|
-            e.dtstart     = Icalendar::Values::Date.new(@date)
-            e.dtend       = Icalendar::Values::Date.new(@date)
-            e.summary     = @loc_title.to_s
+          sibuyarsv.event do |ev|
+            ev.dtstart     = Icalendar::Values::Date.new(@date)
+            ev.dtend       = Icalendar::Values::Date.new(@date)
+            ev.summary     = @loc_title.to_s
           end
-          sibuyalend.publish
         end
       end
-      
-      open('git/sibuyarsv.ics', "w") do |ical|
+
+      open('git/sibuyarsv.ics', "wb") do |ical|
         ical.puts sibuyarsv.to_ical
       end
+
+      puts "渋谷予約 取り置き"+hold.to_s+"冊/"+"合計冊数"+rsv.to_s+"冊"
+      puts "合計内訳⇛渋谷図書館"+sibuya2.to_s+"冊 "+"中央図書館"+tyuuou2.to_s+"冊 "+"富ヶ谷図書館"+tomigaya2.to_s+"冊 "
+      puts "取り置き⇛渋谷図書館"+sibuya.to_s+"冊 "+"中央図書館"+tyuuou.to_s+"冊 "+"富ヶ谷図書館"+tomigaya.to_s+"冊 "
+
+      @wd.quit
 
     end
   rescue => e
@@ -142,6 +179,3 @@ class Liblist
     sleep 3
   end
 end
-
-l = Liblist.new
-l.list

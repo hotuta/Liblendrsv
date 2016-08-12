@@ -1,29 +1,32 @@
 require 'selenium-webdriver'
 require 'nokogiri'
-require "date"
+require 'pit'
 require 'time'
 require 'icalendar'
 
-LIBIDM = ""
-LIBPW = ""
-
-class Liblist
+class Minato
   def initialize()
     @wd = Selenium::WebDriver.for :chrome
   end
   def list()
     begin
+      #港区立図書館
+      config = Pit.get('minatolib')
+
       @wd.get "https://www.lib.city.minato.tokyo.jp/licsxp-opac/WOpacMnuTopToPwdLibraryAction.do?gamen=usrrsv"
       @wd.find_element(:id, "login").click
       @wd.find_element(:id, "usrcardnumber").click
       @wd.find_element(:id, "usrcardnumber").clear
-      @wd.find_element(:id, "usrcardnumber").send_keys LIBIDM
+      @wd.find_element(:id, "usrcardnumber").send_keys config['id']
       @wd.find_element(:id, "password").click
       @wd.find_element(:id, "password").clear
-      @wd.find_element(:id, "password").send_keys LIBPW
+      @wd.find_element(:id, "password").send_keys config['password']
       @wd.find_element(:xpath, "//div[@class='ex-navi']/input[1]").click
-      sleep 1
-      @wd.switch_to.alert.accept
+      begin
+        sleep 7
+        @wd.switch_to.alert.accept
+      rescue Selenium::WebDriver::Error::NoSuchAlertError => e
+      end
       @wd.find_element(:id, "stat-lent").click
       sleep 1
 
@@ -39,10 +42,14 @@ class Liblist
       minatolend.append_custom_property('X-WR-CALNAME', "港区立図書館貸出状況")
       minatolend.append_custom_property('X-WR-CALDESC', "港区立図書館貸出状況カレンダー")
 
+      lend = 0
+
       (1..10).each do |bn|
         contact = @wd.find_elements(:xpath, "//table[@class='list']/tbody/tr["+bn.to_s+"]/td[1]/a/strong")
         if contact.size == 0
           break
+        else
+          lend += 1
         end
         html = @wd.page_source
         doc = Nokogiri::HTML(html)
@@ -58,17 +65,18 @@ class Liblist
         doc.xpath("//table[@class='list']/tbody/tr["+bn.to_s+"]/td[5]").each do |anchor|
           @date = anchor.content.delete("/").gsub(/(\s)/,"")
         end
-        minatolend.event do |e|
-          e.dtstart     = Icalendar::Values::Date.new(@date)
-          e.dtend       = Icalendar::Values::Date.new(@date)
-          e.summary     = @title.to_s
+        minatolend.event do |ev|
+          ev.dtstart     = Icalendar::Values::Date.new(@date)
+          ev.dtend       = Icalendar::Values::Date.new(@date)
+          ev.summary     = @title.to_s
         end
-        sibuyalend.publish
       end
 
-      open('git/minatolend.ics', "w") do |ical|
+      open('git/minatolend.ics', "wb") do |ical|
         ical.puts minatolend.to_ical
       end
+
+      puts "港区貸出合計冊数は"+lend.to_s+"冊"
 
       @wd.find_element(:id, "myUsrRsv").click
 
@@ -84,14 +92,19 @@ class Liblist
       minatorsv.append_custom_property('X-WR-CALNAME', "港区立図書館予約状況")
       minatorsv.append_custom_property('X-WR-CALDESC', "港区立図書館予約状況カレンダー")
 
+      rsv = 0
+      hold = 0
+
       (1..10).each do |bn|
         contact = @wd.find_elements(:xpath, "//div/div/div[2]/form/div/table/tbody/tr["+bn.to_s+"]/td[1]/strong/a")
         if contact.size == 0
           break
+        else
+          rsv += 1
         end
-
         contact2 = @wd.find_elements(:xpath, "//table[@class='list']/tbody/tr["+bn.to_s+"]/td[8]/div[contains(.,'/')]/span")
         if contact2.size != 0
+          hold += 1
           html = @wd.page_source
           doc = Nokogiri::HTML(html)
           doc.xpath("//div/div/div[2]/form/div/table/tbody/tr["+bn.to_s+"]/td[1]/strong/a").each do |anchor|
@@ -101,18 +114,21 @@ class Liblist
           doc.xpath("//table[@class='list']/tbody/tr["+bn.to_s+"]/td[8]/div[contains(.,'/')]/span").each do |anchor|
             @date = d.year.to_s+anchor.content.delete("/").gsub(/(\s)/,"")
           end
-          minatorsv.event do |e|
-            e.dtstart     = Icalendar::Values::Date.new(@date)
-            e.dtend       = Icalendar::Values::Date.new(@date)
-            e.summary     = @title.to_s
+          minatorsv.event do |ev|
+            ev.dtstart     = Icalendar::Values::Date.new(@date)
+            ev.dtend       = Icalendar::Values::Date.new(@date)
+            ev.summary     = @title.to_s
           end
-          sibuyalend.publish
         end
       end
 
-      open('git/minatorsv.ics', "w") do |ical|
+      open('git/minatorsv.ics', "wb") do |ical|
         ical.puts minatorsv.to_ical
       end
+
+      puts "港区予約 取り置き"+hold.to_s+"冊/"+"合計冊数"+rsv.to_s+"冊"
+
+      @wd.quit
 
     end
   rescue => e
@@ -121,6 +137,3 @@ class Liblist
     sleep 3
   end
 end
-
-l = Liblist.new
-l.list
