@@ -12,14 +12,20 @@ RubyとSeleniumが動く環境
 
 ## 使い方(初回)
 
-Rubyを入れる(Windowsの方のみ)
-```gem install 'selenium-webdriver'```
-ChromeDriverを入れる
-```gem install 'nokogiri'```
-```gem install 'pit'```
+Rubyを入れる(Windowsの方のみ)  
+
+```gem install 'selenium-webdriver'```  
+
+ChromeDriverを入れる  
+
+```gem install 'nokogiri'```  
+
+```gem install 'pit'```  
+
 ```gem install 'icalendar'```
 
-実行
+
+Liblendrsv.rbを実行
 
 gitディレクトリからGithubにプッシュできるようにし、プッシュ
 
