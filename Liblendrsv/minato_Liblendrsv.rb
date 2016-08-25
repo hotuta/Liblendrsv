@@ -20,13 +20,15 @@ class Minato
       @wd.find_element(:id, "usrcardnumber").send_keys config['id']
       @wd.find_element(:id, "password").click
       @wd.find_element(:id, "password").clear
-      @wd.find_element(:id, "password").send_keys config['password']
+      @wd.find_element(:id, "password").send_keys Base64.decode64(config['password'])
       @wd.find_element(:xpath, "//div[@class='ex-navi']/input[1]").click
+      
       begin
-        sleep 7
+        sleep 3
         @wd.switch_to.alert.accept
       rescue Selenium::WebDriver::Error::NoSuchAlertError => e
       end
+
       @wd.find_element(:id, "stat-lent").click
       sleep 1
 
@@ -72,7 +74,7 @@ class Minato
         end
       end
 
-      open('git/minatolend.ics', "wb") do |ical|
+      open("./Liblendrsv/git/minatolend.ics", "wb") do |ical|
         ical.puts minatolend.to_ical
       end
 
@@ -122,7 +124,7 @@ class Minato
         end
       end
 
-      open('git/minatorsv.ics', "wb") do |ical|
+      open('./Liblendrsv/git/minatorsv.ics', "wb") do |ical|
         ical.puts minatorsv.to_ical
       end
 

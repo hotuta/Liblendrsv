@@ -19,7 +19,7 @@ class Tokai
       @wd.find_element(:name, "userid").send_keys config['id']
       @wd.find_element(:name, "password").click
       @wd.find_element(:name, "password").clear
-      @wd.find_element(:name, "password").send_keys config['password']
+      @wd.find_element(:name, "password").send_keys Base64.decode64(config['password'])
       @wd.find_element(:css, "input.nolinkline").click
       @wd.find_element(:css, "a.lnk_ask").click
 
@@ -91,7 +91,7 @@ class Tokai
         end
       end
 
-      open('git/tokailend.ics', "wb") do |ical|
+      open("./Liblendrsv/git/tokailend.ics", "wb") do |ical|
         ical.puts tokailend.to_ical
       end
 

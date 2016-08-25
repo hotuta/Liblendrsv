@@ -17,7 +17,7 @@ class Kawasaki
       @wd.find_element(:name, "UID").send_keys config['id']
       @wd.find_element(:name, "PASS").click
       @wd.find_element(:name, "PASS").clear
-      @wd.find_element(:name, "PASS").send_keys config['password']
+      @wd.find_element(:name, "PASS").send_keys Base64.decode64(config['password'])
       @wd.find_element(:css, "input[type=\"submit\"]").click
       @wd.find_element(:link_text, "貸出状況照会へ").click
 
@@ -68,7 +68,7 @@ class Kawasaki
         end
       end
 
-      open('git/kawasakilend.ics', "wb") do |ical|
+      open('./Liblendrsv/git/kawasakilend.ics', "wb") do |ical|
         ical.puts kawasakilend.to_ical
       end
 
@@ -116,13 +116,13 @@ class Kawasaki
         end
       end
 
-      open('git/kawasakirsv.ics', "wb") do |ical|
+      open("./Liblendrsv/git/kawasakirsv.ics", "wb") do |ical|
         ical.puts kawasakirsv.to_ical
       end
 
       rsv -= 1
       puts "川崎予約合計冊数は"+rsv.to_s+"冊"
-      
+
       @wd.quit
 
     end

@@ -17,7 +17,7 @@ class Shibuya
       @wd.find_element(:id, "txtRiyoshaCD").send_keys config['id']
       @wd.find_element(:id, "txtPassword").click
       @wd.find_element(:id, "txtPassword").clear
-      @wd.find_element(:id, "txtPassword").send_keys config['password']
+      @wd.find_element(:id, "txtPassword").send_keys Base64.decode64(config['password'])
       @wd.find_element(:id, "btnKakunin").click
 
       sibuyalend = Icalendar::Calendar.new
@@ -89,7 +89,7 @@ class Shibuya
       puts "渋谷貸出合計冊数は"+lend.to_s+"冊"
       puts "渋谷図書館"+sibuya.to_s+"冊 "+"中央図書館"+tyuuou.to_s+"冊 "+"富ヶ谷図書館"+tomigaya.to_s+"冊 "
 
-      open('git/sibuyalend.ics', "wb") do |ical|
+      open('./Liblendrsv/git/sibuyalend.ics', "wb") do |ical|
         ical.puts sibuyalend.to_ical
       end
 
@@ -162,7 +162,7 @@ class Shibuya
         end
       end
 
-      open('git/sibuyarsv.ics', "wb") do |ical|
+      open("./Liblendrsv/git/sibuyarsv.ics", "wb") do |ical|
         ical.puts sibuyarsv.to_ical
       end
 
