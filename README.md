@@ -5,6 +5,11 @@
 Liblendrsv(リブレ)とは、図書館の借りた本の返却期限、予約した本の取置期限をGoogleカレンダーで管理できるようにするスクリプトです。  
 Issues、Pull Requests大歓迎です。
 
+## 機能
+
+返却期限や予約資料の取置期限をGoogleカレンダーに表示する以外に、
+コマンドライン、ターミナル上で冊数の上限中の何冊今借りているのかなどを確認することが出来ます。
+
 ## 対応図書館
 
 渋谷区立図書館
@@ -51,12 +56,14 @@ gem install 'icalendar'
 
 1. Liblendrsv.rbを実行する。
 
-   →必要とするところ以外コメントアウトしてください
+   →必要とする図書館以外のところはLiblendrsv.rbを開いて#でコメントアウトしてください
 
    →→pitの環境設定をする
    渋谷区立図書館の例
    ```
-   ruby -r pit -e "Pit.set('shibuyalib', :data=>{'id'=>'hoge', 'password'=>'hogehoge'})"
+   ruby -r base64 -e "puts Base64.encode64('hogehoge')"
+   →aG9nZWhvZ2U=
+   ruby -r pit -e "Pit.set('shibuyalib', :data=>{'id'=>'hoge', 'password'=>'aG9nZWhvZ2U='})"
    ```
 
 2. gitディレクトリからGithubの任意のリポジトリへプッシュできるようにする
@@ -72,7 +79,7 @@ gem install 'icalendar'
 ## 今後の予定
 
 目黒区立図書館に対応
-Webアプリケーションにする
+Webアプリケーションにして誰でも手軽に触れるようにする
 
 ## ライセンス
 
