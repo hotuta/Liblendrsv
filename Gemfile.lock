@@ -53,6 +53,10 @@ GEM
       xpath (~> 2.0)
     childprocess (0.8.0)
       ffi (~> 1.0, >= 1.0.11)
+    clockwork (2.0.2)
+      activesupport
+      tzinfo
+    coderay (1.1.2)
     coffee-rails (4.2.2)
       coffee-script (>= 2.2.0)
       railties (>= 4.0.0)
@@ -69,6 +73,7 @@ GEM
       activesupport (>= 4.2.0)
     i18n (0.9.1)
       concurrent-ruby (~> 1.0)
+    icalendar (2.4.1)
     jbuilder (2.7.0)
       activesupport (>= 4.2.0)
       multi_json (>= 1.2)
@@ -90,6 +95,11 @@ GEM
     nokogiri (1.8.1)
       mini_portile2 (~> 2.3.0)
     pg (0.21.0)
+    pry (0.11.3)
+      coderay (~> 1.1.0)
+      method_source (~> 0.9.0)
+    pry-rails (0.3.6)
+      pry (>= 0.10.4)
     public_suffix (3.0.1)
     puma (3.11.0)
     rack (2.0.3)
@@ -177,10 +187,13 @@ PLATFORMS
 DEPENDENCIES
   byebug
   capybara (~> 2.13)
+  clockwork
   coffee-rails (~> 4.2)
+  icalendar
   jbuilder (~> 2.5)
   listen (>= 3.0.5, < 3.2)
   pg (~> 0.18)
+  pry-rails
   puma (~> 3.7)
   rails (~> 5.1.4)
   sass-rails (~> 5.0)
