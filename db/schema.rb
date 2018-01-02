@@ -19,7 +19,7 @@ ActiveRecord::Schema.define(version: 20171223091005) do
     t.date "date"
     t.text "location"
     t.text "title"
-    t.integer "isbn"
+    t.bigint "isbn"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
