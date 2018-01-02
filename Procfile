@@ -1,1 +1,1 @@
-clock: bundle exec clockwork lib/clock.rb
+cron: bundle exec clockwork config/clock.rb
