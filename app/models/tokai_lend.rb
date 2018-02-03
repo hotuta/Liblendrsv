@@ -1,0 +1,2 @@
+class TokaiLend < ApplicationRecord
+end
