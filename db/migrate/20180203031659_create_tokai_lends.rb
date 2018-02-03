@@ -4,7 +4,7 @@ class CreateTokaiLends < ActiveRecord::Migration[5.1]
       t.date :date
       t.text :location
       t.text :title
-      t.integer :isbn
+      t.integer :isbn, :limit => 8
 
       t.timestamps
     end
