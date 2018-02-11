@@ -1,4 +1,29 @@
 class TokaiLend < ApplicationRecord
+  def self.icalendar(books)
+    tokailend = Icalendar::Calendar.new
+    tokailend.timezone do |t|
+      t.tzid = "Asia/Tokyo"
+      t.standard do |s|
+        s.tzoffsetfrom = "+0900"
+        s.tzoffsetto   = "+0900"
+        s.dtstart      = "19700101T000000"
+      end
+    end
+    tokailend.append_custom_property('X-WR-CALNAME', "東海大学貸出状況")
+    tokailend.append_custom_property('X-WR-CALDESC', "東海大学貸出状況カレンダー")
+
+    books.each do |book|
+      tokailend.event do |ev|
+        ev.dtstart     = Icalendar::Values::Date.new(book.date)
+        ev.dtend       = Icalendar::Values::Date.new(book.date)
+        ev.summary     = book.title
+      end
+    end
+
+    tokailend.to_ical
+  end
+
+
   def self.get_lend_list
     session = Capybara::Session.new(:chrome)
     session.visit 'https://opac.time.u-tokai.ac.jp/webopac/login.do?url=ufisnd.do%3Fredirect_page_id%3D13'
