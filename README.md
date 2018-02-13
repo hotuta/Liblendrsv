@@ -1,24 +1,13 @@
-# README
+# Liblendrsv(リブレ)
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+[![The GPN License](https://img.shields.io/badge/license-GPN-blue.svg)](LICENSE)
 
-Things you may want to cover:
+Liblendrsv(リブレ)とは、図書館で借りた本の貸出状況をスクレイピングしてGoogleカレンダー上で確認出来るアプリです。
 
-* Ruby version
+## 対応図書館
 
-* System dependencies
+- 東海大学図書館  
 
-* Configuration
+## ライセンス
 
-* Database creation
-
-* Database initialization
-
-* How to run the test suite
-
-* Services (job queues, cache servers, search engines, etc.)
-
-* Deployment instructions
-
-* ...
+GPN
