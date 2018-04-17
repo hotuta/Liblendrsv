@@ -41,6 +41,7 @@ class TokaiLend < ApplicationRecord
 
     if session.has_xpath?("//table[@class='opac_data_list_ex']//tr/td[4]")
       session.all('//table[@class="opac_data_list_ex"]//tr/td[9]/a')[0].click
+      tokai_lends = []
       for bn in 0..99 do
         tokai_lend = TokaiLend.new
         tokai_lend.location = session.find('//th[contains(., "貸出館")]/following-sibling::td').text.gsub(/(\s)/, '')
@@ -53,10 +54,7 @@ class TokaiLend < ApplicationRecord
           loop until session.has_css?('.container')
         end
         tokai_lend.isbn = session.find('//*[@class="opac_syosi_list"]//th[contains(., "ISBN")]/following-sibling::td', visible: false).text
-        TokaiLend.find_or_initialize_by(isbn: tokai_lend.isbn) do |book|
-          book = tokai_lend
-          book.save
-        end
+        tokai_lends << tokai_lend
 
         session.driver.browser.close
         session.driver.browser.switch_to.window(session.driver.browser.window_handles.last)
@@ -67,6 +65,7 @@ class TokaiLend < ApplicationRecord
           break
         end
       end
+      TokaiLend.import tokai_lends, recursive: true, on_duplicate_key_update: {conflict_target: [:isbn], columns: [:date]}
     end
   end
 end
