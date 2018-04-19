@@ -52,7 +52,7 @@ class TokaiLend < ApplicationRecord
 
         session.driver.browser.switch_to.window(session.driver.browser.window_handles.last)
         Timeout.timeout(30) do
-          loop until session.has_css?('.container')
+          loop until session.has_css?('.opac_syosi_list')
         end
         vol = session.find("(//td[contains(., '#{book_id}')]/preceding-sibling::td)[2]", visible: false).text
         if session.all('//*[@class="opac_syosi_list"]//th[contains(., "ISBN")]/following-sibling::td', visible: false).count >= 2
