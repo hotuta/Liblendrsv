@@ -47,13 +47,19 @@ class TokaiLend < ApplicationRecord
         tokai_lend.location = session.find('//th[contains(., "貸出館")]/following-sibling::td').text.gsub(/(\s)/, '')
         tokai_lend.date = Time.parse(session.find('//th[contains(., "返却期限日")]/following-sibling::td').text)
         tokai_lend.title = session.find('//th[contains(., "書誌事項")]/following-sibling::td').text
+        book_id = session.find('//th[contains(., "資料ID")]/following-sibling::td').text
         session.find('//table[@class="opac_confirm_list"]//tr/td/a').click
 
         session.driver.browser.switch_to.window(session.driver.browser.window_handles.last)
         Timeout.timeout(30) do
           loop until session.has_css?('.container')
         end
-        tokai_lend.isbn = session.find('//*[@class="opac_syosi_list"]//th[contains(., "ISBN")]/following-sibling::td', visible: false).text
+        vol = session.find("(//td[contains(., '#{book_id}')]/preceding-sibling::td)[2]", visible: false).text
+        if session.all('//*[@class="opac_syosi_list"]//th[contains(., "ISBN")]/following-sibling::td', visible: false).count >= 2
+        tokai_lend.isbn = session.find("//*[@class='opac_syosi_list']//table//tr[contains(., '#{vol}')]/following-sibling::tr/td", visible: false).text
+        else
+          tokai_lend.isbn = session.find('//*[@class="opac_syosi_list"]//th[contains(., "ISBN")]/following-sibling::td', visible: false).text
+        end
         tokai_lends << tokai_lend
 
         session.driver.browser.close
